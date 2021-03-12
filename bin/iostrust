@@ -18,18 +18,21 @@ command :add do |c|
       puts "No certificates specified or no device UUID specified"
     else
       certs_to_add = []
-      args.each do |cert_path|
+      uuid, *rest = args
+      rest.each do |cert_path|
         certs_to_add << Iostrust::Certificate.new(cert_path)
       end
-      if args.slice(0) == "all"
+      if uuid == "all"
         Iostrust.simulators_paths.each do |simulator_path|
           simulator = Iostrust::Simulator.new(simulator_path)
           simulator.add_certs(certs_to_add)
         end
       else
-        simulator_path = "Developer/CoreSimulator/Devices/#{args.slice(0)}/data/Library/"
-        simulator = Iostrust::Simulator.new(simulator_path)
-        simulator.add_certs(certs_to_add)
+        found_paths = Dir.glob("~/Library/Developer/CoreSimulator/Devices/#{uuid}/data/Library/")
+        found_paths.each do |simulator_path|
+          simulator = Iostrust::Simulator.new(simulator_path)
+          simulator.add_certs(certs_to_add)
+        end
       end
     end
   end
